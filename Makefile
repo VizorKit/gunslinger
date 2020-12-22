@@ -1,6 +1,6 @@
 # Variables
 CC = gcc
-CFLAGS = -Wall -O0 -std=c11 -DDEBUG -g
+CFLAGS = -Wall -O0 -std=c11 -DDEBUG -g -fPIC
 ODUMP = objdump
 ODFLAGS = -d
 OBJCOPY = objcopy
@@ -14,7 +14,7 @@ SRCDIR := src
 TSTDIR := tests
 
 # Target name
-target = vk
+target = gunslinger.so
 
 # Sources
 sources := $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c)
@@ -38,8 +38,7 @@ run: $(TGTDIR)/$(target)
 	@echo "success"
 
 $(TGTDIR)/$(target) : $(objects)
-	$(CC) $(CFLAGS) $^ -o $@
-	$@
+	$(CC) $(CFLAGS) -shared $^ -o $@
 
 # Test rules.
 # TODO:: get the recipe to fail on failed test.

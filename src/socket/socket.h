@@ -2,5 +2,6 @@
 
 int socket_init();
 int socket_bind();
-void socket_listen();
-int socket_error();
+int socket_listen();
+int socket_close();
+int socket_loop();
