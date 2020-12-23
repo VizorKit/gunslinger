@@ -3,6 +3,7 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <pthread.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -12,10 +13,11 @@ static int sockfd, reusefd, clientfd;
 static struct sockaddr_in6 server_address;
 static int bindfd;
 static int error = 0;
+void *something();
 
 int socket_init() {
   sockfd = socket(AF_INET6, SOCK_STREAM, 0);
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reusefd, sizeof(reusefd));
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reusefd, sizeof(reusefd));
   if (sockfd == -1) {
     debug_print("%s\n", "socket failed");
     error = 1;
@@ -55,20 +57,24 @@ int socket_loop() {
   while (1) {
     clientfd = accept(sockfd, NULL, NULL);
     if (clientfd != -1) {
-      char buf[8192];
-      char *lastpos;
-      int size;
-      close(sockfd);
-
-      while (1) {
-        size = recv(clientfd, buf, 8192, 0);
-        if (size == 0) {
-          break;
-        }
-        lastpos = strchr(buf, '\n');
-        send(clientfd, buf, lastpos + 1 - buf, 0);
-      }
-      close(clientfd);
+      pthread_t thread_id;
+      pthread_create(&thread_id, NULL, something, NULL);
     }
   }
+}
+
+void *something() {
+  char buf[8192];
+  char *lastpos;
+  int size;
+
+  while (1) {
+    size = recv(clientfd, buf, 8192, 0);
+    if (size == 0) {
+      break;
+    }
+    lastpos = strchr(buf, '\n');
+    send(clientfd, buf, lastpos + 1 - buf, 0);
+  }
+  return NULL;
 }

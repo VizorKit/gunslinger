@@ -1,6 +1,6 @@
 # Variables
 CC = gcc
-CFLAGS = -Wall -O0 -std=c11 -DDEBUG -g -fPIC
+CFLAGS = -Wall -O0 -std=c11 -DDEBUG -g -fPIC -pthread
 ODUMP = objdump
 ODFLAGS = -d
 OBJCOPY = objcopy
