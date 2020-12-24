@@ -7,17 +7,21 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <stdlib.h>
 #include <unistd.h>
 
-static int sockfd, reusefd, clientfd;
+static int sockfd;
+static int * clientfds;
+static int * openfds;
 static struct sockaddr_in6 server_address;
 static int bindfd;
 static int error = 0;
 void *something();
+void init_clientfds();
 
 int socket_init() {
   sockfd = socket(AF_INET6, SOCK_STREAM, 0);
-  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reusefd, sizeof(reusefd));
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
   if (sockfd == -1) {
     debug_print("%s\n", "socket failed");
     error = 1;
@@ -40,7 +44,7 @@ int socket_bind() {
 }
 
 int socket_listen() {
-  int listenfd = listen(sockfd, 5);
+  int listenfd = listen(sockfd, 1 << 23);
   if (listenfd != 0) {
     debug_print("listenfd %d\n", listenfd);
     error = 1;
@@ -55,8 +59,8 @@ int socket_close() {
 
 int socket_loop() {
   while (1) {
-    clientfd = accept(sockfd, NULL, NULL);
-    if (clientfd != -1) {
+    int temp = accept(sockfd, NULL, NULL);
+    if (temp != -1) {
       pthread_t thread_id;
       pthread_create(&thread_id, NULL, something, NULL);
     }
@@ -77,4 +81,9 @@ void *something() {
     send(clientfd, buf, lastpos + 1 - buf, 0);
   }
   return NULL;
+}
+
+void init_clientfds() {
+  clientfds = malloc(sizeof(int) * 1 << 22);
+  
 }
